@@ -6,6 +6,7 @@ from rest_framework import status
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
 class Payment(APIView):
     def post(self, request):
         try:
