@@ -9,7 +9,10 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from account.views import *
 from django.conf import settings
-from rest_framework.generics import RetrieveUpdateDestroyAPIView,CreateAPIView, ListCreateAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView,CreateAPIView, ListCreateAPIView, UpdateAPIView,ListAPIView
+from rest_framework import permissions
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 
 
 class MainPlaceViewSet(viewsets.ModelViewSet):
@@ -21,7 +24,6 @@ class TripPlanningViewSet(viewsets.ModelViewSet):
     serializer_class = TripPlanningSerializer
     
     def create(self, request, *args, **kwargs):
-        
         main_place_id = request.data.get('maintable_id')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -37,27 +39,38 @@ class TripPlanningViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()  
-
-        # Define which fields can be updated via PATCH
-        allowed_fields = ['image','description','place','date']
-
-        # Validate that the fields being updated are allowed
-        for field, value in request.data.items():
-            if field in allowed_fields:
-                setattr(instance, field, value)
-            else:
-                return Response(
-                    {'detail': f'Field {field} cannot be updated via PATCH'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        instance.save()
-
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
     
+    def update_main_place(self, instance):
+        main_place_id = self.request.data.get('maintable_id')
+        try:
+            main_place = MainPlace.objects.get(pk=main_place_id)
+            main_place_serializer = MainPlaceSerializer(main_place, data=self.request.data.get('main_place_data'), partial=True)
+            main_place_serializer.is_valid(raise_exception=True)
+            main_place_serializer.save()
+        except MainPlace.DoesNotExist:
+            pass
+    
+    def partial_update(self, request, *args, **kwargs):
+
+        try:
+            instance = self.get_object()  
+            # Define which fields can be updated via PATCH
+            allowed_fields = ['id','image','description','place','date']
+            # Validate that the fields being updated are allowed
+            for field, value in request.data.items():
+                if field in allowed_fields:
+                    setattr(instance, field, value)
+                else:
+                    return Response(
+                        {'detail': f'Field {field} cannot be updated via PATCH'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class MainPlaceViewSetsingleView(generics.RetrieveAPIView):
     serializer_class = MainPlaceSerializer
@@ -65,17 +78,38 @@ class MainPlaceViewSetsingleView(generics.RetrieveAPIView):
     lookup_field = 'id'
 
 
-class MainPlaceGuideViewSet(generics.ListAPIView):
+class MainPlaceGuidePackageViewSet(generics.ListCreateAPIView):
     serializer_class = MainPlaceSerializer
     lookup_field ='id '
     def get_queryset(self):
         return MainPlace.objects.filter(user__role='guide',is_show = True)
 
 
+class MainPlaceGuideViewSet(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MainPlaceSerializer
+    lookup_field = 'id'
+    queryset = MainPlace.objects.filter(user__role='guide')
+
+    def update(self, request, *args, **kwargs):
+        print("Received mainPlaceId:", self.kwargs['id'])
+
+        instance = self.get_object()
+        is_show = request.data.get('is_show', None)
+
+        if is_show is not None:
+            instance.is_show = is_show
+            instance.save()
+
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        return Response({'detail': 'Invalid data for update'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserTripPlansListView(generics.ListAPIView):
     serializer_class = MainPlaceSerializer
     lookup_field ='id'
+    
     def get_queryset(self):
          user_id = self.kwargs['id'] 
          return MainPlace.objects.filter(user_id=user_id)
@@ -153,3 +187,42 @@ class InviteFriendView(APIView):
             return Response({"message": "Invitation sent successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
 
+
+class AdminGuidingTripViewSet(generics.ListAPIView):
+    serializer_class = MainPlaceSerializer
+    lookup_field = 'id'
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['main_place', 'start_date', 'end_date', 'note', 'budget']
+    ordering_fields = ['main_place', 'start_date', 'end_date', 'note', 'budget']
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        queryset = MainPlace.objects.filter(user__role='admin', is_show=True)
+
+        # You can add additional custom filtering logic here if needed
+
+        return queryset
+    
+class AdminGuidingUpdateViewSet(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MainPlaceSerializer
+    lookup_field = 'id'
+    queryset = MainPlace.objects.filter(user__role='admin')
+
+    def update(self, request, *args, **kwargs):
+        print("Received mainPlaceId:", self.kwargs['id'])
+
+        instance = self.get_object()
+        is_show = request.data.get('is_show', None)
+
+        if is_show is not None:
+            instance.is_show = is_show
+            instance.save()
+
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        return Response({'detail': 'Invalid data for update'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+ 

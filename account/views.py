@@ -38,7 +38,6 @@ class UserRegistration(CreateAPIView):
         return UserSerializer
 
     def post(self, request):
-         
         email = request.data.get('email')
         password = request.data.get('password')
 

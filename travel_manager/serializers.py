@@ -1,6 +1,8 @@
 # serializers.py
 from rest_framework import serializers
 from .models import *
+from rest_framework.serializers import ModelSerializer
+
  
 class TripPlanningSerializer(serializers.ModelSerializer):    
     class Meta:
@@ -34,3 +36,4 @@ class InvitationSerializer(serializers.ModelSerializer):
         model = Invitation
         fields = '__all__' 
 
+ 

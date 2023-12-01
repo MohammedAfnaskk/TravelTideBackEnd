@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+APPEND_SLASH = False
+
 
 # Application definition
 
@@ -187,7 +189,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ] 
 }
  
 STRIPE_SECRET_KEY ='sk_test_51O5OVQSHlmNPAfSJbYhoD5rVFZN8XxIu8O4pFwZFpHxxg8aWeCVcDHJLQxZinOvLvJBzhSnrF5gzcPcO6imKOnj300ctIkxYvk'
