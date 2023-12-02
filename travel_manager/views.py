@@ -80,10 +80,14 @@ class MainPlaceViewSetsingleView(generics.RetrieveAPIView):
 
 class MainPlaceGuidePackageViewSet(generics.ListCreateAPIView):
     serializer_class = MainPlaceSerializer
-    lookup_field ='id '
+    lookup_field = 'id'
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['main_place', 'start_date', 'end_date', 'note', 'budget']
+    ordering_fields = ['main_place', 'start_date', 'end_date', 'note', 'budget']
+    pagination_class = PageNumberPagination
     def get_queryset(self):
-        return MainPlace.objects.filter(user__role='guide',is_show = True)
-
+        queryset= MainPlace.objects.filter(user__role='guide',is_show = True)
+        return queryset
 
 class MainPlaceGuideViewSet(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MainPlaceSerializer
