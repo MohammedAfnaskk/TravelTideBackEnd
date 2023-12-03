@@ -18,7 +18,8 @@ class CustomUser(AbstractUser):
     address = models.TextField(blank=True,null=True)
     is_google = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
- 
+    payment = models.BooleanField(default=False)
+    payment_date =models.DateField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
