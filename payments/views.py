@@ -29,8 +29,8 @@ class Payment(APIView):
                 ],
                 payment_method_types=['card',],
                 mode="payment",
-                success_url=f"{
-                    settings.CORS_ALLOWED_ORIGINS[0]}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
+                # success_url=f"{
+                #     settings.CORS_ALLOWED_ORIGINS[0]}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=settings.CORS_ALLOWED_ORIGINS[0] +
                 '/?canceled=true',
             )
