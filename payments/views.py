@@ -20,26 +20,41 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class Payment(APIView):
     def post(self, request):
         try:
+            trip_id = request.data.get('trip_id')
+            main_place = request.data.get('main_place')
+            budget = request.data.get('budget')  
+            image = request.data.get('image')
+            print(f"Image URL: {image}")
+
             checkout_session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        "price": "price_1OIquiSHlmNPAfSJyOHoDs5J",
-                        "quantity": 1,
+                line_items=[{
+                    'price_data': {
+                        'currency': 'INR',
+                        'product_data': {
+                            'name': main_place,
+                            'images': [image],  # Add the image URL here
+                        },
+                        'unit_amount': budget * 100,
                     },
-                ],
-                payment_method_types=['card',],
+                    'quantity': 1,
+                }],
+                payment_method_types=['card'],  # Change this to the appropriate payment method type
                 mode="payment",
-                # success_url=f"{
-                #     settings.CORS_ALLOWED_ORIGINS[0]}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=settings.CORS_ALLOWED_ORIGINS[0] +
-                '/?canceled=true',
+                success_url=f"{settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{trip_id}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=f"{settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{trip_id}/?canceled=true",
             )
 
-            logger.info(f"Value of checkout_session: {checkout_session}")
-            return Response({"message": checkout_session}, status=status.HTTP_200_OK)
+            return Response({
+                'message': {
+                    'url': checkout_session.url,
+                    'image_url': image,
+                }
+            })
         except Exception as e:
+            # Log the exception for debugging purposes
+            print(f"Error creating checkout session: {e}")
+            return Response({'error': 'An error occurred while creating the checkout session'}, status=500)
 
-            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PaymentDetailsView(generics.RetrieveUpdateAPIView):
