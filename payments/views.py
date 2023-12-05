@@ -7,10 +7,14 @@ from django.shortcuts import redirect
 import logging
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from account.models import CustomUser
-from .serializers import PaymentSerializer
+
+from travel_manager.serializers import MainPlaceSerializer
+from .models import *
+from .serializers import  StripPaymentSerializer
 from rest_framework import generics, permissions
 from datetime import datetime
+from datetime import date
+from rest_framework import viewsets
 
 logger = logging.getLogger(__name__)
 
@@ -57,31 +61,85 @@ class Payment(APIView):
 
 
 
-class PaymentDetailsView(generics.RetrieveUpdateAPIView):
-    serializer_class = PaymentSerializer
-    queryset = CustomUser.objects.all()  # Replace with your actual user model
+ 
+
+class StripPaymentViewSet(viewsets.ModelViewSet):
+    queryset = StripPayment.objects.all()
+    serializer_class = StripPaymentSerializer
+
+    def perform_create(self, serializer):
+        # Check if the payment record already exists for the given user and trip
+        existing_payment = StripPayment.objects.filter(
+            user=serializer.validated_data['user'],
+            trip=serializer.validated_data['trip'],
+        ).first()
+
+        if existing_payment:
+            # If the record already exists, update it instead of creating a new one
+            existing_payment.payment = serializer.validated_data['payment']
+            existing_payment.payment_date = date.today()
+            existing_payment.save()
+            serializer.instance = existing_payment
+        else:
+            # If the record doesn't exist, create a new one
+            serializer.save(payment_date=date.today())
+
+    def perform_update(self, serializer):
+        if 'payment' in self.request.data and self.request.data['payment']:
+            # Check if the payment record already exists for the given user and trip
+            existing_payment = StripPayment.objects.filter(
+                user=serializer.validated_data['user'],
+                trip=serializer.validated_data['trip'],
+            ).first()
+
+            if existing_payment:
+                # If the record already exists, update it
+                existing_payment.payment = serializer.validated_data['payment']
+                existing_payment.payment_date = date.today()
+                existing_payment.save()
+                serializer.instance = existing_payment
+            else:
+                # If the record doesn't exist, perform the regular update
+                serializer.save(payment_date=date.today())
+        else:
+            serializer.save()
+
+
+class PaymentDetailsView(generics.RetrieveAPIView):
+    serializer_class = StripPaymentSerializer
 
     def get_object(self):
-        user_id = self.kwargs.get('user_id') 
-        return self.queryset.get(pk=user_id)
-    def update_payment_status(self, user, payment, payment_date):
-        user.payment = payment
-
-        # Parse the date string to a datetime object
-        if payment_date:
-            user.payment_date = datetime.fromisoformat(payment_date)
-
-        user.save()
+        user_id = self.kwargs['user_id']
+        trip_id = self.kwargs['trip_id']
+        payment = StripPayment.objects.filter(user=user_id, trip=trip_id).first()
+        return payment
+    
 
 
-    def patch(self, request, *args, **kwargs):
-        user_id = self.kwargs.get('user_id')  # Assuming 'user_id' is passed in URL parameters
-        user = self.get_object()
 
-        payment_success = request.data.get('payment', False)
-        payment_date = request.data.get('payment_date', None)
+class UserPaymentDetailsView(generics.ListAPIView):
+    serializer_class = StripPaymentSerializer
 
-        # Update user payment status and date
-        self.update_payment_status(user, payment_success, payment_date)
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return StripPayment.objects.filter(user=user_id)
 
-        return Response({"success": True, "message": "Payment status updated successfully"})
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+
+        # Include details about each trip
+        for payment_data in data:
+            trip_id = payment_data['trip']
+            
+            # Assuming you have a Trip model and a TripSerializer
+            # If not, you can replace this with the logic to fetch trip details from your model
+            try:
+                trip_instance = MainPlace.objects.get(pk=trip_id)
+                trip_serializer = MainPlaceSerializer(trip_instance)
+                payment_data['trip_details'] = trip_serializer.data
+            except MainPlace.DoesNotExist:
+                # Handle the case where the Trip does not exist
+                payment_data['trip_details'] = None
+        return Response(data)

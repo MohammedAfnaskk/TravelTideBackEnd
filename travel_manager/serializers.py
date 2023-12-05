@@ -11,7 +11,7 @@ class TripPlanningSerializer(serializers.ModelSerializer):
 
 class MainPlaceSerializer(serializers.ModelSerializer):
     trip_planning = TripPlanningSerializer(many=True,required = False)
-    user_name = serializers.CharField(source='user.username', read_only=True)  # Add this line to get the user's name
+    user_name = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = MainPlace

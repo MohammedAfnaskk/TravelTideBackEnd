@@ -1,7 +1,8 @@
+# serializers.py
 from rest_framework import serializers
-from account.models import CustomUser
+from .models import StripPayment
 
-class PaymentSerializer(serializers.ModelSerializer):
+class StripPaymentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
-        fields = ['username','email','payment', 'payment_date']
+        model = StripPayment
+        fields = ['id','user', 'trip', 'payment', 'payment_date']
