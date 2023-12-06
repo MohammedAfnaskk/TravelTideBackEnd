@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from travel_manager.serializers import MainPlaceSerializer
 from .models import *
-from .serializers import  StripPaymentSerializer
+from .serializers import StripPaymentSerializer
 from rest_framework import generics, permissions
 from datetime import datetime
 from datetime import date
@@ -20,13 +20,23 @@ logger = logging.getLogger(__name__)
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+def get_user_role(user_id):
+     
+    try:
+        user = CustomUser.objects.get(id=user_id)
+        return user.role
+    except CustomUser.DoesNotExist:
+        return None 
+    
+
+    
 
 class Payment(APIView):
     def post(self, request):
         try:
             trip_id = request.data.get('trip_id')
             main_place = request.data.get('main_place')
-            budget = request.data.get('budget')  
+            budget = request.data.get('budget')
             image = request.data.get('image')
             print(f"Image URL: {image}")
 
@@ -42,10 +52,13 @@ class Payment(APIView):
                     },
                     'quantity': 1,
                 }],
-                payment_method_types=['card'],  # Change this to the appropriate payment method type
+                # Change this to the appropriate payment method type
+                payment_method_types=['card'],
                 mode="payment",
-                success_url=f"{settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{trip_id}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{trip_id}/?canceled=true",
+                success_url=f"{settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{
+                    trip_id}/?success=true&session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=f"{
+                    settings.CORS_ALLOWED_ORIGINS[0]}/user/trip-package-details/{trip_id}/?canceled=true",
             )
 
             return Response({
@@ -59,9 +72,6 @@ class Payment(APIView):
             print(f"Error creating checkout session: {e}")
             return Response({'error': 'An error occurred while creating the checkout session'}, status=500)
 
-
-
- 
 
 class StripPaymentViewSet(viewsets.ModelViewSet):
     queryset = StripPayment.objects.all()
@@ -111,35 +121,65 @@ class PaymentDetailsView(generics.RetrieveAPIView):
     def get_object(self):
         user_id = self.kwargs['user_id']
         trip_id = self.kwargs['trip_id']
-        payment = StripPayment.objects.filter(user=user_id, trip=trip_id).first()
+        payment = StripPayment.objects.filter(
+            user=user_id, trip=trip_id).first()
         return payment
+
     
-
-
 
 class UserPaymentDetailsView(generics.ListAPIView):
     serializer_class = StripPaymentSerializer
 
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return StripPayment.objects.filter(user=user_id)
+        user_role = get_user_role(user_id)
+
+        if user_role == 'user':
+            return StripPayment.objects.filter(user=user_id)
+        elif user_role == 'guide':
+            return StripPayment.objects.filter(trip__user_id=user_id)
+        else:
+            return StripPayment.objects.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
 
-        # Include details about each trip
         for payment_data in data:
             trip_id = payment_data['trip']
-            
-            # Assuming you have a Trip model and a TripSerializer
-            # If not, you can replace this with the logic to fetch trip details from your model
+
             try:
                 trip_instance = MainPlace.objects.get(pk=trip_id)
                 trip_serializer = MainPlaceSerializer(trip_instance)
                 payment_data['trip_details'] = trip_serializer.data
             except MainPlace.DoesNotExist:
-                # Handle the case where the Trip does not exist
                 payment_data['trip_details'] = None
+
         return Response(data)
+
+
+class AllPaymentDetailsView(generics.ListAPIView):
+    serializer_class = StripPaymentSerializer
+
+    def get_queryset(self):
+        return StripPayment.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+
+        for payment_data in data:
+            trip_id = payment_data['trip']
+
+            try:
+                trip_instance = MainPlace.objects.get(pk=trip_id)
+                trip_serializer = MainPlaceSerializer(trip_instance)
+                payment_data['trip_details'] = trip_serializer.data
+            except MainPlace.DoesNotExist:
+                payment_data['trip_details'] = None
+
+        return Response(data)
+    
+ 

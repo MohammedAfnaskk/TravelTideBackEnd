@@ -10,5 +10,6 @@ urlpatterns = [
    path ('create-checkout-session',Payment.as_view()),
    path('payment-details/<int:user_id>/<int:trip_id>/', PaymentDetailsView.as_view(), name='payment-details'),
    path('user-payment-details/<int:user_id>/', UserPaymentDetailsView.as_view(), name='user-payment-details'),
-   
+   path('all-payment-details/', AllPaymentDetailsView.as_view(), name='all-payment-details'),
+ 
 ]
