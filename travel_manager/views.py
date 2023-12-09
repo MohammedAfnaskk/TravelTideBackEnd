@@ -13,12 +13,11 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView,CreateAPIView, 
 from rest_framework import permissions
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
-
-
+ 
 class MainPlaceViewSet(viewsets.ModelViewSet):
     queryset = MainPlace.objects.all()
     serializer_class = MainPlaceSerializer
-    
+
 class TripPlanningViewSet(viewsets.ModelViewSet):
     queryset = TripPlanning.objects.all()
     serializer_class = TripPlanningSerializer

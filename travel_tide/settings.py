@@ -34,7 +34,7 @@ APPEND_SLASH = False
 # Application definition
 
 INSTALLED_APPS = [
-    # 'daphne',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,8 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'chatserver',
     'channels',
-    'payments'
-      
+    'payments',
+    
+
  
 ]
 
@@ -104,9 +105,9 @@ TEMPLATES = [
     },
 ]
 
+# WSGI_APPLICATION = "travel_tide.wsgi.application"
 ASGI_APPLICATION = "travel_tide.asgi.application"
-WSGI_APPLICATION = 'travel_tide.wsgi.application'
-
+ 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -242,8 +243,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            # "hosts": [('localhost', 6379)],
-            "hosts": [(config('redis'))],
+            "hosts": [('localhost', 6379)],
+            # "hosts": [(config('redis'))],
         },
     },
 }
