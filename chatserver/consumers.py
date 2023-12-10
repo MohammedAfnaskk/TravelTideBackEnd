@@ -64,13 +64,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_user(self, username):
         return get_user_model().objects.filter(email=username).first()
 
+    
+    
     @database_sync_to_async
     def get_messages(self):
         from .serializers import MessageSerializer
         from .models import Message
         messages = []
+
         for instance in Message.objects.filter(thread_name=self.room_group_name):
-            messages = MessageSerializer(instance).data
+            messages.append(MessageSerializer(instance).data)
+
         return messages
 
     @database_sync_to_async
