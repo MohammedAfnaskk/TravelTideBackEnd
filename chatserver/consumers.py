@@ -7,22 +7,37 @@ from django.contrib.auth import get_user_model
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        print("WebSocket Connected")
         current_user_id = int(self.scope["query_string"])
         other_user_id = self.scope["url_route"]["kwargs"]["id"]
+        print(f"Current User ID: {current_user_id}, Other User ID: {other_user_id}")
+ 
+
+        
+
         self.room_name = (
             f"{current_user_id}_{other_user_id}"
             if int(current_user_id) > int(other_user_id)
             else f"{other_user_id}_{current_user_id}"
         )
         self.room_group_name = f"chat_{self.room_name}"
+
+        # Print the constructed room names
+        print("room_name:", self.room_name)
+        print("room_group_name:", self.room_group_name)
+
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
+        print(f"WebSocket Disconnected with Code: {close_code}")
+
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
         await super().disconnect(close_code)
 
     async def receive(self, text_data=None, bytes_data=None):
+        print("WebSocket Received Data:", text_data)
+
         data = json.loads(text_data)
         message = data["message"]
         sender_username = data["senderUsername"]
