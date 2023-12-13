@@ -12,9 +12,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         other_user_id = self.scope["url_route"]["kwargs"]["id"]
         print(f"Current User ID: {current_user_id}, Other User ID: {other_user_id}")
  
-
-        
-
         self.room_name = (
             f"{current_user_id}_{other_user_id}"
             if int(current_user_id) > int(other_user_id)

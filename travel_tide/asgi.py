@@ -1,22 +1,19 @@
 # travel_tide/asgi.py
-import os
-import django
 
+import os
 from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter
 from channels.routing import ProtocolTypeRouter, URLRouter
-from chatserver.routing import websocket_urlpatterns  
+from channels.auth import AuthMiddlewareStack
+import chatserver.routing  # assuming this is where your WebSocket routing is
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'travel_tide.settings')
-django.setup()
-
-django_asgi_app = get_asgi_application()
-
 application = ProtocolTypeRouter(
     {
-        "http": django_asgi_app,
-        "websocket": (
-            (URLRouter(websocket_urlpatterns))
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                chatserver.routing.websocket_urlpatterns
+            )
         ),
     }
 )

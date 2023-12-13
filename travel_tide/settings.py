@@ -69,8 +69,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+ ]
 
-]
 
   
 SITE_ID = 1 
@@ -108,9 +108,17 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = "travel_tide.wsgi.application"
+WSGI_APPLICATION = "travel_tide.wsgi.application"
 ASGI_APPLICATION = "travel_tide.asgi.application"
- 
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -242,12 +250,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
  
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('localhost', 6379)],
-            # "hosts": [(config('redis'))],
-        },
-    },
-}
