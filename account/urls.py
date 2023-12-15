@@ -11,7 +11,7 @@ urlpatterns = [
     path('Resend_registration_link/', views.Resend_registration_link,name="Resend_registration_link"),
     path('googleregistration/', GoogleAuthendication.as_view(), name='googleregistration'),
     path('guide_details/<int:id>/',GuideDetailView.as_view(),name="guide_details"), 
-
+ 
 
 
 ]

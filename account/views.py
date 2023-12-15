@@ -173,4 +173,3 @@ class GuideDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     parser_classes = [MultiPartParser, FormParser]
 
-

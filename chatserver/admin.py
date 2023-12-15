@@ -7,3 +7,4 @@ class MessageAdmin(admin.ModelAdmin):
     list_display = ('message', 'sender', 'receiver')
     
 admin.site.register(Message,MessageAdmin)
+ 

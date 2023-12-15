@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Message     
+from .models import Message
 from rest_framework import serializers
 
 
@@ -9,3 +9,14 @@ class MessageSerializer(ModelSerializer):
     class Meta:
         model = Message
         fields = ['message', 'sender_email']
+
+ 
+ 
+ 
+class ChatListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    email = serializers.EmailField() 
+   
+
+ 
