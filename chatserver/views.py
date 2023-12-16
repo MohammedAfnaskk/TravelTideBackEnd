@@ -1,15 +1,14 @@
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.generics import CreateAPIView,ListAPIView,ListCreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, ListCreateAPIView
 
 from account.models import CustomUser
-from .serializers import ChatListSerializer, MessageSerializer
+from account.serializers import UserSerializer
+from .serializers import MessageSerializer
 from .models import Message
 from rest_framework.filters import SearchFilter
- 
-
+  
 class ChatCreatingView(CreateAPIView):
     serializer_class = MessageSerializer
     queryset = Message.objects.all()
@@ -23,18 +22,18 @@ class PreviousMessagesView(ListAPIView):
         user1 = int(self.kwargs['user1'])
         user2 = int(self.kwargs['user2'])
 
-        thread_suffix = f"{user1}_{user2}" if user1 > user2 else f"{user2}_{user1}"
+        thread_suffix = f"{user1}_{
+            user2}" if user1 > user2 else f"{user2}_{user1}"
         thread_name = 'chat_'+thread_suffix
         queryset = Message.objects.filter(
             thread_name=thread_name
         )
         return queryset
- 
- 
+
 
 # class SingleUserChatsView(ListAPIView):
-#     serializer_class = ChatSerializer 
-    
+#     serializer_class = ChatSerializer
+
 #     def get(self, request, *args, **kwargs):
 #         userID = self.kwargs['id']
 #         user = CustomUser.objects.get(id=userID)
@@ -42,33 +41,41 @@ class PreviousMessagesView(ListAPIView):
 #         return Response({"chat_count": chat_count}, status=status.HTTP_200_OK)
 
 
-
 class ChatListUsers(ListAPIView):
-    serializer_class = ChatListSerializer
+    serializer_class = UserSerializer
+    lookup_field = 'id'
+    filter_backends = [SearchFilter]
+    filterset_fields = ['username', 'email']
+
     def get_queryset(self):
-        current_user_id = self.request.user.id
+        user_id = self.kwargs.get('id')
 
-        # Get distinct users with whom the current user has had chats
-        chat_users = Message.objects.filter(sender_id=current_user_id).values_list('receiver', flat=True).distinct()
+        chat_users = Message.objects.filter(sender_id=user_id).values_list(
+            'receiver', flat=True).distinct()
+        users_query = CustomUser.objects.filter(id__in=chat_users)
 
-        # Return the queryset of chat users
-        return CustomUser.objects.filter(id__in=chat_users)
+        return users_query
+
     def list(self, request, *args, **kwargs):
- 
-        # Get distinct users with whom the current user has had chats
-        sender_users = Message.objects.filter(sender_id=current_user_id).values_list('receiver', flat=True).distinct()
-        receiver_users = Message.objects.filter(receiver_id=current_user_id).values_list('sender', flat=True).distinct()
+        sender_users = Message.objects.filter(
+            sender_id=self.kwargs.get('id')).values_list('receiver', flat=True).distinct()
+        receiver_users = Message.objects.filter(
+            receiver_id=self.kwargs.get('id')).values_list('sender', flat=True).distinct()
         chat_users = set(sender_users).union(receiver_users)
 
-        # Get user details for each chat user
         users_data = []
+
         for user_id in chat_users:
-            user_data = {
-                'id': user_id,
-                'username': CustomUser.objects.get(id=user_id).username,
-                'email': CustomUser.objects.get(id=user_id).email,
-                # Add other fields you need
-            }
-            users_data.append(user_data)
+            try:
+                user = CustomUser.objects.get(id=user_id)
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'profile_image': request.build_absolute_uri(user.profile_image.url),
+                }
+                users_data.append(user_data)
+            except CustomUser.DoesNotExist:
+                pass
 
         return Response(users_data, status=status.HTTP_200_OK)
