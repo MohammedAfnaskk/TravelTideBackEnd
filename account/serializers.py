@@ -37,7 +37,7 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['is_admin'] = user.is_superuser
         return token
    
-        
+    
         
         
         

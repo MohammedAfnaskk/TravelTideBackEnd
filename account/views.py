@@ -1,4 +1,4 @@
-from .serializers import UserSerializer,myTokenObtainPairSerializer,GoogleAuthSerializer
+from .serializers import  UserSerializer,myTokenObtainPairSerializer,GoogleAuthSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView,CreateAPIView, ListCreateAPIView, UpdateAPIView
 from rest_framework import generics
@@ -24,7 +24,7 @@ from django.contrib.sites.models import Site
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from decouple import config
- 
+from account.tasks import *
 User = get_user_model()
  
  
@@ -165,8 +165,72 @@ def create_jwt_pair_tokens(user):
     return {
         "access": access_token,
         "refresh": refresh_token,
+
+
+
     }
  
+# Forgot password
+class Forgotpassword(APIView):
+    def post(self, request):
+        email =  request.data.get('email')
+        if CustomUser.objects.filter(email=email).exclude(is_google=True).exists():
+            user = User.objects.get(email__exact=email)
+            current_site = get_current_site(request)
+            domain = current_site.domain.rstrip('/')
+
+            mail_subject = 'Click this link to change your password'
+            message = render_to_string('user/forgot_password.html',{
+                'user' : user,
+                'domain' : domain,
+                'uid' : urlsafe_base64_encode(force_bytes(user.pk)),
+                'token' : default_token_generator.make_token(user),
+                'site' : domain
+            })
+            to_email = email
+            send_mail = EmailMessage(mail_subject,message,to=[to_email])
+            send_mail.send()           
+            print(f'UID: {urlsafe_base64_encode(force_bytes(user.pk))}')
+            print(f'Token: {default_token_generator.make_token(user)}')
+            return Response(data={'message' : 'verification email has been sent to your email address','user_id' : user.id,},status=status.HTTP_200_OK)
+        else:
+            return Response(data={'message' : 'No account found'},status=status.HTTP_404_NOT_FOUND)
+
+# Forgot password password changeing section
+@api_view(['GET'])
+def resetpassword(request,uidb64,token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    Baseurl = config('BaseUrl', default='http://localhost:5173/')
+    if user is not None and default_token_generator.check_token(user,token):
+        redirect_url = f'{Baseurl}resetpassword/?key={uidb64}/?t={token}/'
+    else:
+        message = 'Invalid activation link'
+        redirect_url = f'{Baseurl}resetpassword' + '?message=' + message
+    return HttpResponseRedirect(redirect_url)
+
+# Update User Details   
+class ResetPassword(APIView):
+    def post(self, request,uidb64, format=None):
+        password = request.data.get('password')
+        if uidb64 and password:  
+            try:
+                user_id = urlsafe_base64_decode(uidb64).decode()
+                user = CustomUser.objects.get(id=user_id)
+                
+              
+                user.set_password(password)
+                user.save()
+                return Response(data={'message': 'Password has been reset successfully'})
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+ 
+                return Response(data={'message': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data={'message': 'Token or password not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
 class GuideDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     queryset = CustomUser.objects.all()
