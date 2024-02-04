@@ -87,7 +87,7 @@ CORS_ALLOW_WEBSOCKETS = True
  
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://travel-tide.vercel.app",
+    "https://traveltide.vercel.app",
   ]
  
 
