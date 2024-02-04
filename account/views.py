@@ -75,13 +75,13 @@ class UserActivationView(APIView):
                 user.save()
                 message = 'Congrats! Account activated!'
                 if user.role == 'user':
-                    redirect_url = config()+ '?message=' + message
+                    redirect_url = config('frontend_url')+ '?message=' + message
                 else:
-                    redirect_url =  + '?message=' + message
+                    redirect_url = config('frontend_url')+ '?message=' + message
                     
             else:
                 message = 'Invalid activation link'
-                redirect_url =  + '?message=' + message
+                redirect_url = config('frontend_url') + '?message=' + message
 
             return HttpResponseRedirect(redirect_url)
         except Exception as e:
