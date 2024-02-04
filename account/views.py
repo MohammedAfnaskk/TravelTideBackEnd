@@ -19,12 +19,13 @@ from rest_framework import status
 from django.shortcuts import HttpResponseRedirect
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
-from .email_task import send_activation_email
 from django.contrib.sites.models import Site
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from decouple import config
 from account.tasks import *
+from .utils import send_activation_email
+
 User = get_user_model()
  
  
@@ -48,23 +49,7 @@ class UserRegistration(CreateAPIView):
             user.set_password(password)
             user.save()
  
-            # Send Mail
-            current_site = Site.objects.get_current()
-            backendurl = config('backendUrl')
-            current_site.domain = backendurl
-            current_site.save()
-            # current_site = get_current_site(request)
-            mail_subject = 'Please activate your account'
-            message = render_to_string('user/email_notification.html', {
-                'user': user,
-                'domain': current_site,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': default_token_generator.make_token(user),
-                'cite': current_site
-            })
-            email = email
-            email = EmailMessage(mail_subject, message, to=[email])
-            email.send()
+            send_activation_email(user)
 
             response_data = {
                 'status': 'success',
@@ -90,13 +75,13 @@ class UserActivationView(APIView):
                 user.save()
                 message = 'Congrats! Account activated!'
                 if user.role == 'user':
-                    redirect_url = 'http://localhost:5173/' + '?message=' + message
+                    redirect_url = config|()+ '?message=' + message
                 else:
-                    redirect_url = 'http://localhost:5173/' + '?message=' + message
+                    redirect_url =  + '?message=' + message
                     
             else:
                 message = 'Invalid activation link'
-                redirect_url = 'http://localhost:5173/' + '?message=' + message
+                redirect_url =  + '?message=' + message
 
             return HttpResponseRedirect(redirect_url)
         except Exception as e:

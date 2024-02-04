@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'chatserver',
     'channels',
     'payments',
-    
+     
 
  
 ]
@@ -244,7 +244,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
- 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
