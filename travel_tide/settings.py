@@ -13,8 +13,6 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
- 
-
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 WEBSITE_NAME = 'Travel Tide'
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/ 
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-(18^6eqlmc)wo9p+x!6*7bs8)b-jsb0z*-%*@ipms)*_h%i+d1'
 
@@ -58,7 +56,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
 
- 
+
 ]
 
 MIDDLEWARE = [
@@ -70,32 +68,29 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
- ]
+]
 
 # Cloudinary Configruation settings
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config("cloud_name"),
-    'API_KEY'   : config('api_key'),
+    'API_KEY': config('api_key'),
     'API_SECRET': config('api_secret'),
 }
-  
-SITE_ID = 1 
+
+SITE_ID = 1
 ROOT_URLCONF = 'travel_tide.urls'
 
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_WEBSOCKETS = True 
- 
- 
- 
- 
+CORS_ALLOW_WEBSOCKETS = True
+
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://traveltide.vercel.app",
-  ]
- 
+]
 
 
 TEMPLATES = [
@@ -132,11 +127,11 @@ CHANNEL_LAYERS = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'traveltide', 
-#         'USER': 'postgres',    
-#         'PASSWORD': '@Afnas97',  
-#         'HOST': 'localhost',           
-#         'PORT': '',  
+#         'NAME': 'traveltide',
+#         'USER': 'postgres',
+#         'PASSWORD': '@Afnas97',
+#         'HOST': 'localhost',
+#         'PORT': '',
 #     }
 # }
 
@@ -192,7 +187,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
- 
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -202,14 +197,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'account.CustomUser'
 
 
-
 REST_FRAMEWORK = {
-     'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ] 
+    ]
 }
- 
-STRIPE_SECRET_KEY ='sk_test_51O5OVQSHlmNPAfSJbYhoD5rVFZN8XxIu8O4pFwZFpHxxg8aWeCVcDHJLQxZinOvLvJBzhSnrF5gzcPcO6imKOnj300ctIkxYvk'
+
+STRIPE_SECRET_KEY = 'sk_test_51O5OVQSHlmNPAfSJbYhoD5rVFZN8XxIu8O4pFwZFpHxxg8aWeCVcDHJLQxZinOvLvJBzhSnrF5gzcPcO6imKOnj300ctIkxYvk'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -252,6 +246,3 @@ SIMPLE_JWT = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
- 
