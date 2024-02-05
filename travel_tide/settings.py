@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'chatserver',
     'channels',
     'payments',
-     
+    'cloudinary_storage',
+    'cloudinary',
 
  
 ]
@@ -71,7 +72,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
  ]
 
-
+# Cloudinary Configruation settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config("cloud_name"),
+    'API_KEY'   : config('api_key'),
+    'API_SECRET': config('api_secret'),
+}
   
 SITE_ID = 1 
 ROOT_URLCONF = 'travel_tide.urls'
