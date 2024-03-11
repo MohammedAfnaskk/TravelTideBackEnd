@@ -124,32 +124,33 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'traveltide',
-#         'USER': 'postgres',
-#         'PASSWORD': '@Afnas97',
-#         'HOST': 'localhost',
-#         'PORT': '',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('dbname'),                      
+        'USER': config('dbuser'),
+        'PASSWORD': config('dbpass'),
+        'HOST': 'localHost',
+        'PORT': ''
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'afnaskkvlr@gmail.com'
-EMAIL_HOST_PASSWORD = 'ujybbteesomlkeuo'
+EMAIL_HOST_USER = config('email')
+EMAIL_HOST_PASSWORD = config('epass')
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'afnaskkvlr@gmail.com'
+DEFAULT_FROM_EMAIL = config('dfpass')
 
 
 # Password validation
@@ -187,7 +188,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS= [
+    os.path.join(BASE_DIR / 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
