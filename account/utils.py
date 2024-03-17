@@ -15,7 +15,7 @@ def send_activation_email(user):
     mail_subject = 'Please activate your account'
     message = render_to_string('user/email_notification.html', {
         'user': user,
-        'domain': current_site.domain,
+        'domain': config('backendUrl'),
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': default_token_generator.make_token(user),
     })
