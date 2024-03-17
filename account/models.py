@@ -38,7 +38,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     password =models.CharField(max_length=100)
     profile_image = models.ImageField(upload_to='profile_pics',blank=True,null=True)
-    phone = models.PositiveIntegerField(blank=True,null=True)    
+    phone = models.CharField(blank=True,null=True)    
     role = models.CharField(max_length=10, choices=USER_ROLES, default='user')
     address = models.TextField(blank=True,null=True)
     is_google = models.BooleanField(default=False)
