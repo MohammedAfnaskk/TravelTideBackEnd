@@ -10,7 +10,7 @@ class TripPlanningSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MainPlaceSerializer(serializers.ModelSerializer):
-    trip_planning = TripPlanningSerializer(many=True,required = False)
+    trip_planning = TripPlanningSerializer(many=True, required = False)
     user_name = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:

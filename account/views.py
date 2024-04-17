@@ -49,7 +49,7 @@ class UserRegistration(CreateAPIView):
             user.set_password(password)
             user.save()
  
-            send_activation_email(user)
+            # send_activation_email(user)
 
             response_data = {
                 'status': 'success',

@@ -203,7 +203,6 @@ class AdminGuidingTripViewSet(generics.ListAPIView):
         queryset = MainPlace.objects.filter(user__role='admin', is_show=True)
 
         # You can add additional custom filtering logic here if needed
-
         return queryset
     
 class AdminGuidingUpdateViewSet(generics.RetrieveUpdateDestroyAPIView):

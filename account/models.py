@@ -34,17 +34,19 @@ class CustomUser(AbstractUser):
         ('guide','Guide'),
         ('admin','Admin'),
     )
-    
-    email = models.EmailField(unique=True)
-    password =models.CharField(max_length=100)
     profile_image = models.ImageField(upload_to='profile_pics',blank=True,null=True)
-    phone = models.CharField(blank=True,null=True)    
+    phone = models.CharField(blank=True,null=True,max_length=10)   
+    email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=USER_ROLES, default='user')
     address = models.TextField(blank=True,null=True)
     is_google = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD ='email'
     REQUIRED_FIELDS = ['username']
     
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.email
