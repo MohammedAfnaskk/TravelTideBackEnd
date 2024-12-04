@@ -8,6 +8,7 @@ router.register(r'main-place', MainPlaceViewSet)
 router.register(r'trip-planning', TripPlanningViewSet)
 
 urlpatterns = [
+    
     path('', include(router.urls)),
     path('MainPlaceViewSetsingleView/<int:id>',MainPlaceViewSetsingleView.as_view(),name="MainPlaceViewSetsingleView"),
     path('guide-trip-package/',MainPlaceGuidePackageViewSet.as_view(),name="guide-trip-plans"),
@@ -20,6 +21,4 @@ urlpatterns = [
     path('trip-guiding/',AdminGuidingTripViewSet.as_view(),name="guide-trip-plans"),
     path('admin-guiding-trips/<int:id>/', AdminGuidingUpdateViewSet.as_view(), name='admin-guiding-update'),
 
-    
 ]
-

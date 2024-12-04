@@ -19,6 +19,7 @@ def send_activation_email(user):
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': default_token_generator.make_token(user),
     })
+    print('--->>>,',message)
 
     email = EmailMessage(mail_subject, message, to=[user.email])
     email.send()

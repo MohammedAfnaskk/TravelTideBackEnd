@@ -36,6 +36,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 class UserRegistration(CreateAPIView):
     def get_serializer_class(self):
+    
         return UserSerializer
 
     def post(self, request):
@@ -49,7 +50,7 @@ class UserRegistration(CreateAPIView):
             user.set_password(password)
             user.save()
  
-            # send_activation_email(user)
+            send_activation_email(user)
 
             response_data = {
                 'status': 'success',
@@ -189,7 +190,7 @@ def resetpassword(request,uidb64,token):
         user = User._default_manager.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-    Baseurl = config('BaseUrl', default='http://localhost:5173/')
+    Baseurl = config('frontend_url', default='http://localhost:5173/')
     if user is not None and default_token_generator.check_token(user,token):
         redirect_url = f'{Baseurl}resetpassword/?key={uidb64}/?t={token}/'
     else:
@@ -206,7 +207,6 @@ class ResetPassword(APIView):
                 user_id = urlsafe_base64_decode(uidb64).decode()
                 user = CustomUser.objects.get(id=user_id)
                 
-              
                 user.set_password(password)
                 user.save()
                 return Response(data={'message': 'Password has been reset successfully'})
